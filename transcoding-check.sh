@@ -86,7 +86,7 @@ echo "You can press Ctrl+C to interrupt earlier if needed."
 sleep 1
 sudo timeout 2 intel_gpu_top && STATUS_GPU_TOP=true
 
-# 📋 Final Summary
+# Final Summary
 echo ""
 echo "===== Transcoding Readiness Report ====="
 echo "GPU Path (/dev/dri)..................: ${STATUS_DRI}"
