@@ -30,14 +30,18 @@ else
     sudo usermod -aG render "$USER_NAME" && echo "User added. You may need to log out and back in."
 fi
 
-# Install intel-gpu-tools
 echo ""
-echo "Installing intel-gpu-tools..."
-sudo apt update
-sudo apt install -y intel-gpu-tools || {
-    echo "Failed to install intel-gpu-tools."
-    exit 3
-}
+echo "Checking if intel_gpu_top is already installed..."
+if command -v intel_gpu_top >/dev/null 2>&1; then
+    echo "intel_gpu_top is already installed. Skipping installation."
+else
+    echo "intel_gpu_top not found. Installing intel-gpu-tools..."
+    sudo apt update
+    sudo apt install -y intel-gpu-tools || {
+        echo "Failed to install intel-gpu-tools."
+        exit 3
+    }
+fi
 
 # Confirm intel_gpu_top is available
 echo ""
