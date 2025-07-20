@@ -11,7 +11,6 @@ else
     exit 1
 fi
 
-# Strict check for renderD128
 echo ""
 echo "Checking for 'renderD128' device..."
 if [ -e /dev/dri/renderD128 ]; then
@@ -21,7 +20,6 @@ else
     exit 2
 fi
 
-# Add the user to the render group if not already in it
 echo ""
 echo "Checking if '$USER_NAME' is in the 'render' group..."
 if groups "$USER_NAME" | grep -q render; then
@@ -32,27 +30,6 @@ else
 fi
 
 echo ""
-echo "Checking if intel_gpu_top is already installed..."
-if command -v intel_gpu_top >/dev/null 2>&1; then
-    echo "intel_gpu_top is already installed. Skipping installation."
-else
-    echo "intel_gpu_top not found. Installing intel-gpu-tools..."
-    sudo apt update
-    sudo apt install -y intel-gpu-tools || {
-        echo "Failed to install intel-gpu-tools."
-        exit 3
-    }
-fi
-
-# Confirm intel_gpu_top is available
-echo ""
-command -v intel_gpu_top >/dev/null 2>&1 || {
-    echo "intel_gpu_top was not found after install. Please check your drivers."
-    exit 4
-}
-
-# Confirm vainfo is available
-echo ""
 echo "Checking if 'vainfo' is installed..."
 if command -v vainfo >/dev/null 2>&1; then
     echo "'vainfo' is already installed. Proceeding with VAAPI capability check..."
@@ -61,14 +38,32 @@ else
     sudo apt update
     sudo apt install -y vainfo || {
         echo "Failed to install vainfo."
-        exit 4
+        exit 3
     }
 fi
 
-# Run vainfo and display supported codecs
 echo ""
 echo "Querying VAAPI capabilities with vainfo..."
 vainfo | grep -i 'VAProfile' || {
     echo "No VAAPI profiles detected. Hardware acceleration may not be supported or properly configured."
-    exit 5
+    exit 4
 }
+
+echo ""
+echo "Checking if 'intel_gpu_top' is installed for visual feedback..."
+if command -v intel_gpu_top >/dev/null 2>&1; then
+    echo "'intel_gpu_top' is already installed. Proceeding with snapshot..."
+else
+    echo "'intel_gpu_top' not found. Installing intel-gpu-tools..."
+    sudo apt update
+    sudo apt install -y intel-gpu-tools || {
+        echo "Failed to install intel-gpu-tools."
+        exit 5
+    }
+fi
+
+echo ""
+echo "Launching intel_gpu_top for 2 seconds (visual snapshot)..."
+echo "You can press Ctrl+C to interrupt earlier if needed."
+sleep 1
+sudo timeout 2 intel_gpu_top
