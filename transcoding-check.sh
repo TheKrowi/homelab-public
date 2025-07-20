@@ -51,20 +51,24 @@ command -v intel_gpu_top >/dev/null 2>&1 || {
     exit 4
 }
 
-# Run intel_gpu_top for 2 seconds and capture output
-sudo timeout 2 intel_gpu_top > /tmp/gpu_sample.txt 2>&1
-
-# Show snapshot
+# Confirm vainfo is available
 echo ""
-echo "----- GPU Activity Snapshot -----"
-head -n 20 /tmp/gpu_sample.txt
-echo "---------------------------------"
-
-# Check for GPU activity in the output
-echo ""
-echo "Checking for signs of GPU activity (Video Decode section)..."
-if grep -qi "Video" /tmp/gpu_sample.txt; then
-    echo "GPU metrics detected. Transcoding-capable GPU is active."
+echo "Checking if 'vainfo' is installed..."
+if command -v vainfo >/dev/null 2>&1; then
+    echo "'vainfo' is already installed. Proceeding with VAAPI capability check..."
 else
-    echo "No visible GPU metrics during sample. Is transcoding software running?"
+    echo "'vainfo' not found. Installing..."
+    sudo apt update
+    sudo apt install -y vainfo || {
+        echo "Failed to install vainfo."
+        exit 4
+    }
 fi
+
+# Run vainfo and display supported codecs
+echo ""
+echo "Querying VAAPI capabilities with vainfo..."
+vainfo | grep -i 'VAProfile' || {
+    echo "No VAAPI profiles detected. Hardware acceleration may not be supported or properly configured."
+    exit 5
+}
