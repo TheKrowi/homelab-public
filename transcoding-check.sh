@@ -83,8 +83,9 @@ fi
 echo ""
 echo "Launching intel_gpu_top for 2 seconds (visual snapshot)..."
 echo "You can press Ctrl+C to interrupt earlier if needed."
+STATUS_GPU_TOP=true
 sleep 1
-sudo timeout 2 intel_gpu_top && STATUS_GPU_TOP=true
+sudo timeout 2 intel_gpu_top
 
 # Final Summary
 echo ""
