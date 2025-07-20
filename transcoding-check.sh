@@ -46,19 +46,19 @@ command -v intel_gpu_top >/dev/null 2>&1 || {
     exit 4
 }
 
-# Sample intel_gpu_top and check if output contains key indicators
-echo "Sampling intel_gpu_top for 2 seconds..."
-GPU_STATS=$(sudo timeout 2 intel_gpu_top 2>&1)
+# Run intel_gpu_top for 2 seconds and capture output
+sudo timeout 2 intel_gpu_top > /tmp/gpu_sample.txt 2>&1
 
+# Show snapshot
 echo ""
 echo "----- GPU Activity Snapshot -----"
-echo "$GPU_STATS" | head -n 20  # Show first 20 lines for brevity
+head -n 20 /tmp/gpu_sample.txt
 echo "---------------------------------"
 
-# Optional: check if Video decode activity line appears
+# Check for GPU activity in the output
 echo ""
 echo "Checking for signs of GPU activity (Video Decode section)..."
-if echo "$GPU_STATS" | grep -qi "Video"; then
+if grep -qi "Video" /tmp/gpu_sample.txt; then
     echo "GPU metrics detected. Transcoding-capable GPU is active."
 else
     echo "No visible GPU metrics during sample. Is transcoding software running?"
