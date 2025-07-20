@@ -3,12 +3,13 @@
 # Resolve the actual logged-in user
 USER_NAME=$(logname)
 
-# Check access to /dev/dri
 echo "Checking GPU device access..."
-ls -l /dev/dri || {
+if [ -d /dev/dri ]; then
+    echo "GPU device path '/dev/dri' is present."
+else
     echo "/dev/dri not found. Are you running this inside a VM with GPU passthrough?"
     exit 1
-}
+fi
 
 # Strict check for renderD128
 echo ""
