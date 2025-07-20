@@ -17,7 +17,7 @@ if [ -e /dev/dri/renderD128 ]; then
     echo "Found renderD128."
 else
     echo "Device 'renderD128' not found. Hardware transcoding requires this device. Aborting."
-    exit 1
+    exit 2
 fi
 
 # Add the user to the render group if not already in it
@@ -36,17 +36,30 @@ echo "Installing intel-gpu-tools..."
 sudo apt update
 sudo apt install -y intel-gpu-tools || {
     echo "Failed to install intel-gpu-tools."
-    exit 2
+    exit 3
 }
 
 # Confirm intel_gpu_top is available
 echo ""
 command -v intel_gpu_top >/dev/null 2>&1 || {
     echo "intel_gpu_top was not found after install. Please check your drivers."
-    exit 3
+    exit 4
 }
 
-# Launch intel_gpu_top
-echo "Starting intel_gpu_top (press Ctrl+C to exit)..."
-sleep 1
-sudo intel_gpu_top
+# Sample intel_gpu_top and check if output contains key indicators
+echo "Sampling intel_gpu_top for 2 seconds..."
+GPU_STATS=$(sudo timeout 2 intel_gpu_top 2>&1)
+
+echo ""
+echo "----- GPU Activity Snapshot -----"
+echo "$GPU_STATS" | head -n 20  # Show first 20 lines for brevity
+echo "---------------------------------"
+
+# Optional: check if Video decode activity line appears
+echo ""
+echo "Checking for signs of GPU activity (Video Decode section)..."
+if echo "$GPU_STATS" | grep -qi "Video"; then
+    echo "GPU metrics detected. Transcoding-capable GPU is active."
+else
+    echo "No visible GPU metrics during sample. Is transcoding software running?"
+fi
